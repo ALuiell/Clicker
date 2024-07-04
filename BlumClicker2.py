@@ -25,9 +25,9 @@ try:
         paused = False
 
         x1, y1, x2, y2 = win32gui.GetWindowRect(window_handle)
-        x1 += 20
+        x1 += 30
         y1 += 150
-        x2 -= 20
+        x2 -= 40
         y2 -= 400
 
         click_counter = 0
@@ -62,7 +62,7 @@ try:
                     area = cv2.contourArea(contour)
                     x, y, w, h = cv2.boundingRect(contour)
                     aspect_ratio = float(w) / h
-                    if area > 10 and 0.5 < aspect_ratio < 1.5:
+                    if area > 10 and 0.75 < aspect_ratio < 1.2:
                         center_x = x + w // 2
                         center_y = y + h // 2
                         absolute_x = x1 + center_x
