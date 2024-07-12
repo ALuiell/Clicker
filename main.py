@@ -1,4 +1,4 @@
-import logging
+"""VERSION 2.0"""
 import random
 import cv2
 import keyboard
@@ -20,6 +20,8 @@ class Clicker:
 
     @staticmethod
     def count_replay_game():
+        print("Enter the number of tickets (games) to play automatically after the first manual run.")
+        print("Example: If you have 5 tickets, enter 4 and start the first game manually. ")
         while True:
             try:
                 count = int(input("How many times do you want to play?: "))
@@ -51,14 +53,13 @@ class Clicker:
                 print(f"Окно '{self.window_title}' не найдено")
                 time.sleep(1)  # Ждем 1 секунду перед следующей попыткой
 
-    def replay_game(self, count):
-        print("Start Found Play Button")
-        count_replay = count
+    def replay_game(self):
+        print("Try to start new game")
         x1, y1, x2, y2 = self.coordinates
-        coords = (x1 + 20, y1 + 500, x2 - 20, y2 - 75)
+        coords = (x1 + 20, y1 + 530, x2 - 30, y2 - 75)
+        time.sleep(2)
 
         while True:
-
             screenshot = ImageGrab.grab(bbox=coords)
             hsv = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2HSV)
 
@@ -75,56 +76,15 @@ class Clicker:
                     center_y = y + h // 2
                     absolute_x = coords[0] + center_x
                     absolute_y = coords[1] + center_y
-                    cv2.rectangle(hsv, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                    cv2.imshow("Screenshot", hsv)
-                    cv2.waitKey(0)
                     win32api.SetCursorPos((absolute_x, absolute_y))
-                    # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, absolute_x, absolute_y, 0, 0)
-                    # win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, absolute_x, absolute_y, 0, 0)
-                    break
+                    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, absolute_x, absolute_y, 0, 0)
+                    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, absolute_x, absolute_y, 0, 0)
+                    return
+
                 else:
-                    print("Button Play not found")
+                    print("Trying to find Button PLAY ")
 
-    # def find_objects_and_click(self, count):
-    #     print("Start Game")
-    #     global paused
-    #     x1, y1, x2, y2 = self.coordinates
-    #     x1 += 20
-    #     y1 += 150
-    #     x2 -= 20
-    #     y2 -= 400
-    #     #
-    #     # start_time = time.time()
-    #     #
-    #     # while time.time() - start_time < 30:
-    #     while True:
-    #         if not paused:
-    #             screenshot = ImageGrab.grab(bbox=(x1, y1, x2, y2))
-    #             image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-    #             hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    #
-    #             lower_green = np.array([30, 120, 100])
-    #             upper_green = np.array([65, 255, 255])
-    #             mask_green = cv2.inRange(hsv, lower_green, upper_green)
-    #             contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    #
-    #             for contour in contours_green:
-    #                 area = cv2.contourArea(contour)
-    #                 x, y, w, h = cv2.boundingRect(contour)
-    #                 aspect_ratio = float(w) / h
-    #                 if area > 10 and 0.8 < aspect_ratio < 1.2:
-    #                     center_x = x + w // 2
-    #                     center_y = y + h // 2
-    #                     absolute_x = x1 + center_x + random.randint(-3, 3)
-    #                     absolute_y = y1 + center_y + random.randint(-3, 3)
-    #                     win32api.SetCursorPos((absolute_x, absolute_y))
-    #                     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, absolute_x, absolute_y, 0, 0)
-    #                     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, absolute_x, absolute_y, 0, 0)
-    #                     delay = random.uniform(0.04, 0.1)
-    #                     time.sleep(delay)
-    #                     break
-
-    def find_objects_and_click(self, count):
+    def find_objects_and_click(self):
         print("Start Game")
         global paused
         x1, y1, x2, y2 = self.coordinates
@@ -162,11 +122,11 @@ class Clicker:
                         win32api.SetCursorPos((absolute_x, absolute_y))
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, absolute_x, absolute_y, 0, 0)
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, absolute_x, absolute_y, 0, 0)
-                        delay = random.uniform(0.04, 0.1)
+                        delay = random.uniform(0.01, 0.1)
                         time.sleep(delay)
                         break
 
-            if keyboard.is_pressed('w'):
+            if keyboard.is_pressed('q'):
                 paused = not paused
                 time.sleep(0.2)
 
@@ -175,18 +135,28 @@ class Clicker:
                 else:
                     print("Clicker resumed")
 
-        # self.replay_game(count)
-
 
 clicker = Clicker()
 
 
 def game():
-    while True:
-        if clicker.is_window_open():
-            count = clicker.count_replay_game()
-            # clicker.find_objects_and_click(count)
-            clicker.replay_game(count)
+    print("""
+    ██████╗░██╗░░░░░██╗░░░██╗███╗░░░███╗  ░█████╗░██╗░░░░░██╗░█████╗░██╗░░██╗███████╗██████╗░
+    ██╔══██╗██║░░░░░██║░░░██║████╗░████║  ██╔══██╗██║░░░░░██║██╔══██╗██║░██╔╝██╔════╝██╔══██╗
+    ██████╦╝██║░░░░░██║░░░██║██╔████╔██║  ██║░░╚═╝██║░░░░░██║██║░░╚═╝█████═╝░█████╗░░██████╔╝
+    ██╔══██╗██║░░░░░██║░░░██║██║╚██╔╝██║  ██║░░██╗██║░░░░░██║██║░░██╗██╔═██╗░██╔══╝░░██╔══██╗
+    ██████╦╝███████╗╚██████╔╝██║░╚═╝░██║  ╚█████╔╝███████╗██║╚█████╔╝██║░╚██╗███████╗██║░░██║
+    ╚═════╝░╚══════╝░╚═════╝░╚═╝░░░░░╚═╝  ░╚════╝░╚══════╝╚═╝░╚════╝░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝""")
+    print("INSTRUCTION")
+    print("Open Blum, start script, enter the number of games, press play on main screen and watch")
+    print("Press 'q' to pause(pause broke script)")
+    if clicker.is_window_open():
+        count = clicker.count_replay_game()
+        for _ in range(count):
+            clicker.find_objects_and_click()
+            clicker.replay_game()
+        clicker.find_objects_and_click()
+    print("End")
 
 
 if __name__ == '__main__':
