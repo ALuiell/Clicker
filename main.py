@@ -8,8 +8,13 @@ import win32gui
 import time
 import win32api
 import win32con
+import logging
+import count_rewards
+
 
 paused = False
+total_points = 0
+logging.basicConfig(filename='clicker_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class Clicker:
@@ -43,21 +48,47 @@ class Clicker:
                 x1, y1, x2, y2 = self.coordinates
                 coords = (x1 + 20, y1 + 100, x2 - 20, y2 - 450)
                 try:
+                    # blum window check
                     screenshot = ImageGrab.grab(bbox=coords)
                     print("Blum found")
-                    return True  # Окно найдено и активно
+                    return True
                 except ValueError:
                     print("Blum window is not active. Make sure the correct Blum window is active.")
-                    time.sleep(1)  # Ждем 1 секунду перед следующей попыткой
+                    time.sleep(1)
             else:
                 print(f"Окно '{self.window_title}' не найдено")
-                time.sleep(1)  # Ждем 1 секунду перед следующей попыткой
+                time.sleep(1)
+
+    def retrieve_reward_points(self):
+        global total_points
+        x1, y1, x2, y2 = self.coordinates
+        coords = (x1 + 170, y1 + 340, x2 - 100, y2 - 265)
+        try:
+            screenshot = ImageGrab.grab(bbox=coords)
+            screenshot_np = np.array(screenshot)
+
+            count_points_for_game = count_rewards.image_to_text(screenshot_np).split()
+
+            if count_points_for_game:
+                clear = ''.join(c for c in count_points_for_game[0] if c.isdigit())
+                if clear:
+                    print(f'points per game: {clear}')
+                    total_points += int(clear)
+                else:
+                    print("points per game : error")
+            else:
+                print("points per game : error")
+
+        except Exception as e:
+            print(f"points per game : error")
+            print(f"Произошла ошибка: {e}")
 
     def replay_game(self):
         print("Try to start new game")
         x1, y1, x2, y2 = self.coordinates
         coords = (x1 + 20, y1 + 530, x2 - 30, y2 - 75)
-        time.sleep(2)
+        self.retrieve_reward_points()
+        time.sleep(5)
 
         while True:
             screenshot = ImageGrab.grab(bbox=coords)
@@ -82,6 +113,7 @@ class Clicker:
                     return
 
                 else:
+                    time.sleep(2)
                     print("Trying to find Button PLAY ")
 
     def find_objects_and_click(self):
@@ -111,18 +143,20 @@ class Clicker:
                     area = cv2.contourArea(contour)
                     x, y, w, h = cv2.boundingRect(contour)
                     aspect_ratio = float(w) / h
-                    if area > 10 and 0.8 < aspect_ratio < 1.2:
+                    if area > 15 and 0.8 < aspect_ratio < 1.2:
                         if start_time is None:
-                            start_time = time.time()  # Устанавливаем start_time при первом клике
+                            start_time = time.time()
+                            logging.info("Game started. Clicking initiated.")  # Log the start
+                            # Устанавливаем start_time при первом клике
 
                         center_x = x + w // 2
                         center_y = y + h // 2
-                        absolute_x = x1 + center_x + random.randint(-3, 3)
-                        absolute_y = y1 + center_y + random.randint(-3, 3)
+                        absolute_x = x1 + center_x + random.randint(-5, 5)
+                        absolute_y = y1 + center_y + random.randint(-5, 5)
                         win32api.SetCursorPos((absolute_x, absolute_y))
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, absolute_x, absolute_y, 0, 0)
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, absolute_x, absolute_y, 0, 0)
-                        delay = random.uniform(0.01, 0.1)
+                        delay = random.uniform(0.02, 0.1)
                         time.sleep(delay)
                         break
 
@@ -131,9 +165,10 @@ class Clicker:
                 time.sleep(0.2)
 
                 if paused:
-                    print("Clicker paused")
+                    logging.info("Clicker paused")
                 else:
-                    print("Clicker resumed")
+                    logging.info("Clicker resumed")
+        logging.info("Time limit reached or game ended. Clicking stopped.")
 
 
 clicker = Clicker()
@@ -155,8 +190,14 @@ def game():
         for _ in range(count):
             clicker.find_objects_and_click()
             clicker.replay_game()
+            count -= 1
+            print(f"Games Left {count}")
+            print("------------------------------------------------------")
         clicker.find_objects_and_click()
+        clicker.retrieve_reward_points()
+    print(f"total points: {total_points}")
     print("End")
+    input("Press enter to quit.")
 
 
 if __name__ == '__main__':
