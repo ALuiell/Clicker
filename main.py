@@ -130,7 +130,7 @@ class Clicker:
         start_time = None
         time_limit = 30
 
-        while True and (start_time is None or time.time() - start_time <= time_limit):  # Условие цикла
+        while True and (start_time is None or time.time() - start_time <= time_limit):
             if not paused:
                 screenshot = ImageGrab.grab(bbox=(x1, y1, x2, y2))
                 image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
@@ -185,7 +185,7 @@ def game():
     ██████╦╝███████╗╚██████╔╝██║░╚═╝░██║  ╚█████╔╝███████╗██║╚█████╔╝██║░╚██╗███████╗██║░░██║
     ╚═════╝░╚══════╝░╚═════╝░╚═╝░░░░░╚═╝  ░╚════╝░╚══════╝╚═╝░╚════╝░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝""")
     print("INSTRUCTION")
-    print("Open Blum, start script, enter the number of games, press play on main screen and watch")
+    print("OPEN BLUM, START SCRIPT, ENTER THE NUMBER OF GAMES, PRESS PLAY ON MAIN SCREEN AND WATCH")
     print("Press 'q' to pause(pause broke script)")
     if clicker.is_window_open():
         count = clicker.count_replay_game()
@@ -193,7 +193,7 @@ def game():
             clicker.find_objects_and_click()
             clicker.replay_game()
             count -= 1
-            print(f"Games Left {count}")
+            print(f"Games Left {count + 1}")
             print("------------------------------------------------------")
 
         clicker.find_objects_and_click()
