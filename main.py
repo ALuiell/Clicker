@@ -38,14 +38,17 @@ class Clicker:
     def window_exists(self):
         return win32gui.FindWindow(None, self.window_title)
 
+    def get_coords(self):
+        self.coordinates = win32gui.GetWindowRect(self.windows_handle)
+        return self.coordinates
+
     def is_window_open(self):
         while True:
             window_handle = self.window_exists()
             if window_handle:
                 print(f"window: {self.window_title} found")
                 self.windows_handle = window_handle
-                self.coordinates = win32gui.GetWindowRect(window_handle)
-                x1, y1, x2, y2 = self.coordinates
+                x1, y1, x2, y2 = self.get_coords()
                 coords = (x1 + 20, y1 + 100, x2 - 20, y2 - 450)
                 try:
                     # blum window check
@@ -61,8 +64,8 @@ class Clicker:
 
     def retrieve_reward_points(self):
         global total_points
-        x1, y1, x2, y2 = self.coordinates
-        coords = (x1 + 170, y1 + 340, x2 - 100, y2 - 265)
+        x1, y1, x2, y2 = self.get_coords()
+        coords = (x1 + 170, y1 + 345, x2 - 100, y2 - 275)
         try:
             screenshot = ImageGrab.grab(bbox=coords)
             screenshot_np = np.array(screenshot)
@@ -85,10 +88,10 @@ class Clicker:
 
     def replay_game(self):
         print("Try to start new game")
-        x1, y1, x2, y2 = self.coordinates
-        coords = (x1 + 20, y1 + 530, x2 - 30, y2 - 75)
         self.retrieve_reward_points()
         time.sleep(5)
+        x1, y1, x2, y2 = self.get_coords()
+        coords = (x1 + 20, y1 + 530, x2 - 30, y2 - 75)
 
         while True:
             screenshot = ImageGrab.grab(bbox=coords)
@@ -117,7 +120,6 @@ class Clicker:
                     print("Trying to find Button PLAY ")
 
     def find_objects_and_click(self):
-        print("Start Game")
         global paused
         x1, y1, x2, y2 = self.coordinates
         x1 += 20
@@ -147,7 +149,7 @@ class Clicker:
                         if start_time is None:
                             start_time = time.time()
                             logging.info("Game started. Clicking initiated.")  # Log the start
-                            # Устанавливаем start_time при первом клике
+                            print("Game started. Clicking initiated.")
 
                         center_x = x + w // 2
                         center_y = y + h // 2
@@ -156,7 +158,7 @@ class Clicker:
                         win32api.SetCursorPos((absolute_x, absolute_y))
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, absolute_x, absolute_y, 0, 0)
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, absolute_x, absolute_y, 0, 0)
-                        delay = random.uniform(0.02, 0.1)
+                        delay = random.uniform(0.05, 0.1)
                         time.sleep(delay)
                         break
 
@@ -193,6 +195,7 @@ def game():
             count -= 1
             print(f"Games Left {count}")
             print("------------------------------------------------------")
+
         clicker.find_objects_and_click()
         clicker.retrieve_reward_points()
     print(f"total points: {total_points}")
