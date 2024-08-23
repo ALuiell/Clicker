@@ -59,7 +59,7 @@ class Clicker:
                     print("Blum window is not active. Make sure the correct Blum window is active.")
                     time.sleep(1)
             else:
-                print(f"Окно '{self.window_title}' не найдено")
+                print(f"Window'{self.window_title}' Found")
                 time.sleep(1)
 
     def retrieve_reward_points(self):
@@ -84,7 +84,7 @@ class Clicker:
 
         except Exception as e:
             print(f"points per game : error")
-            print(f"Произошла ошибка: {e}")
+            print(f"Error: {e}")
 
     def replay_game(self):
         print("Try to start new game")
