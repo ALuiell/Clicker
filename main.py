@@ -8,7 +8,6 @@ import time
 import win32api
 import win32con
 import logging
-import count_rewards
 
 
 paused = False
@@ -61,34 +60,8 @@ class Clicker:
                 print(f"Window'{self.window_title}' Found")
                 time.sleep(1)
 
-    def retrieve_reward_points(self):
-        global total_points
-        x1, y1, x2, y2 = self.get_coords()
-        coords = (x1 + 170, y1 + 345, x2 - 100, y2 - 275)
-        try:
-            screenshot = ImageGrab.grab(bbox=coords)
-            screenshot_np = np.array(screenshot)
-
-            count_points_for_game = count_rewards.image_to_text(screenshot_np).split()
-
-            if count_points_for_game:
-                clear = ''.join(c for c in count_points_for_game[0] if c.isdigit())
-                if clear:
-                    print(f'points per game: {clear}')
-                    total_points += int(clear)
-                    logging.info("points per game: {clear}")
-                else:
-                    print("points per game : error")
-            else:
-                print("points per game : error")
-
-        except Exception as e:
-            print(f"points per game : error")
-            print(f"Error: {e}")
-
     def replay_game(self):
         print("Try to start new game")
-        self.retrieve_reward_points()
         time.sleep(5)
         x1, y1, x2, y2 = self.get_coords()
         coords = (x1 + 20, y1 + 530, x2 - 30, y2 - 75)
@@ -184,9 +157,9 @@ def game():
     ██╔══██╗██║░░░░░██║░░░██║██║╚██╔╝██║  ██║░░██╗██║░░░░░██║██║░░██╗██╔═██╗░██╔══╝░░██╔══██╗
     ██████╦╝███████╗╚██████╔╝██║░╚═╝░██║  ╚█████╔╝███████╗██║╚█████╔╝██║░╚██╗███████╗██║░░██║
     ╚═════╝░╚══════╝░╚═════╝░╚═╝░░░░░╚═╝  ░╚════╝░╚══════╝╚═╝░╚════╝░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝""")
-    print("ver 3.0")
+    print("ver_without_count_rewards")
     print("INSTRUCTION")
-    print("OPEN BLUM, START SCRIPT, ENTER THE NUMBER OF GAMES, PRESS PLAY ON MAIN SCREEN AND WATCH")
+    print("Open Blum, start script, enter the number of games, press play on main screen and watch")
     print("Press 'q' to pause(pause broke script)")
     if clicker.is_window_open():
         count = clicker.count_replay_game()
@@ -194,15 +167,10 @@ def game():
             clicker.find_objects_and_click()
             clicker.replay_game()
             count -= 1
-            print(f"Games Left {count + 1}")
+            print(f"Games Left {count}")
             print("------------------------------------------------------")
-
         clicker.find_objects_and_click()
-        clicker.retrieve_reward_points()
-        logging.info(f'total_point for session {total_points}')
-    print(f"total points: {total_points}")
     print("End")
-    input("Press enter to quit.")
 
 
 if __name__ == '__main__':
