@@ -184,7 +184,6 @@ def game():
     ██╔══██╗██║░░░░░██║░░░██║██║╚██╔╝██║  ██║░░██╗██║░░░░░██║██║░░██╗██╔═██╗░██╔══╝░░██╔══██╗
     ██████╦╝███████╗╚██████╔╝██║░╚═╝░██║  ╚█████╔╝███████╗██║╚█████╔╝██║░╚██╗███████╗██║░░██║
     ╚═════╝░╚══════╝░╚═════╝░╚═╝░░░░░╚═╝  ░╚════╝░╚══════╝╚═╝░╚════╝░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝""")
-    print("ver 3.0")
     print("INSTRUCTION")
     print("OPEN BLUM, START SCRIPT, ENTER THE NUMBER OF GAMES, PRESS PLAY ON MAIN SCREEN AND WATCH")
     print("Press 'q' to pause(pause broke script)")

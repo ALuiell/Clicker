@@ -20,3 +20,4 @@ def image_to_text(image_np):
         except pytesseract.TesseractError as e:
             print(f"Error during OCR: {e}")
             return []
+
