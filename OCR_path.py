@@ -1,1 +1,0 @@
-ocr_path = r"F:\Python\Coursera\Opencv_Pillow_Tesseract\tesseract\tesseract.exe"
