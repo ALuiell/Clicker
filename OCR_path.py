@@ -1,1 +1,0 @@
-ocr_path = r"" # path to tesseract
