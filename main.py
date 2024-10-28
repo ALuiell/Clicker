@@ -12,7 +12,8 @@ import logging
 
 paused = False
 total_points = 0
-logging.basicConfig(filename='clicker_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# logging.basicConfig(filename='clicker_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+click_counter = 0
 
 
 class Clicker:
@@ -61,12 +62,14 @@ class Clicker:
                 time.sleep(1)
 
     def replay_game(self):
+        print(f"clicks for game: {click_counter}")
         print("Try to start new game")
-        time.sleep(5)
-        x1, y1, x2, y2 = self.get_coords()
-        coords = (x1 + 20, y1 + 530, x2 - 30, y2 - 75)
+        delay = random.uniform(5, 10)
+        time.sleep(delay)
 
         while True:
+            x1, y1, x2, y2 = self.get_coords()
+            coords = (x1 + 20, y1 + 530, x2 - 30, y2 - 75)
             screenshot = ImageGrab.grab(bbox=coords)
             hsv = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2HSV)
 
@@ -93,7 +96,8 @@ class Clicker:
                     print("Trying to find Button PLAY ")
 
     def find_objects_and_click(self):
-        global paused
+        global paused, click_counter
+        click_counter = 0
         x1, y1, x2, y2 = self.coordinates
         x1 += 20
         y1 += 150
@@ -101,27 +105,36 @@ class Clicker:
         y2 -= 400
 
         start_time = None
-        time_limit = 30
+        time_limit = 40
 
         while True and (start_time is None or time.time() - start_time <= time_limit):
             if not paused:
                 screenshot = ImageGrab.grab(bbox=(x1, y1, x2, y2))
                 image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-                hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+                # hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-                lower_green = np.array([30, 120, 100])
-                upper_green = np.array([65, 255, 255])
-                mask_green = cv2.inRange(hsv, lower_green, upper_green)
-                contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                # lower_orange = np.array([10, 100, 100])
+                # upper_orange = np.array([30, 255, 255])
+                # lower_gray = np.array([100, 100, 100])
+                # upper_gray = np.array([150, 150, 150])
+                #
+                # mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
+                # mask_gray = cv2.inRange(hsv, lower_gray, upper_gray)
+                #
+                # contours, _ = cv2.findContours(mask_orange | mask_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-                for contour in contours_green:
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)[1]
+                contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+                for contour in contours:
                     area = cv2.contourArea(contour)
                     x, y, w, h = cv2.boundingRect(contour)
                     aspect_ratio = float(w) / h
                     if area > 15 and 0.8 < aspect_ratio < 1.2:
                         if start_time is None:
                             start_time = time.time()
-                            logging.info("Game started. Clicking initiated.")  # Log the start
+                            # logging.info("Game started. Clicking initiated.")  # Log the start
                             print("Game started. Clicking initiated.")
 
                         center_x = x + w // 2
@@ -131,19 +144,21 @@ class Clicker:
                         win32api.SetCursorPos((absolute_x, absolute_y))
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, absolute_x, absolute_y, 0, 0)
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, absolute_x, absolute_y, 0, 0)
-                        delay = random.uniform(0.01, 0.1)
+                        delay = random.uniform(0.01, 0.06)
+                        # time.sleep(0.01)
                         time.sleep(delay)
+                        click_counter += 1
                         break
 
             if keyboard.is_pressed('q'):
                 paused = not paused
                 time.sleep(0.2)
 
-                if paused:
-                    logging.info("Clicker paused")
-                else:
-                    logging.info("Clicker resumed")
-        logging.info("Time limit reached or game ended. Clicking stopped.")
+                # if paused:
+                #     logging.info("Clicker paused")
+                # else:
+                #     logging.info("Clicker resumed")
+        # logging.info("Time limit reached or game ended. Clicking stopped.")
 
 
 clicker = Clicker()
@@ -170,6 +185,7 @@ def game():
             print(f"Games Left {count}")
             print("------------------------------------------------------")
         clicker.find_objects_and_click()
+
     print("End")
 
 

@@ -1,0 +1,18 @@
+venv/
+# Python
+pycache/
+*.pyo
+*.pyd
+*.pyz
+*.pyzw
+
+# Build
+build/
+dist/
+
+# IDE
+.idea/
+
+# Miscellaneous
+.DS_Store
+Thumbs.db
