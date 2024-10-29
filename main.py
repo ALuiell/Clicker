@@ -105,27 +105,28 @@ class Clicker:
         y2 -= 400
 
         start_time = None
-        time_limit = 40
+        time_limit = 35
 
         while True and (start_time is None or time.time() - start_time <= time_limit):
             if not paused:
                 screenshot = ImageGrab.grab(bbox=(x1, y1, x2, y2))
                 image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-                # hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+                hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-                # lower_orange = np.array([10, 100, 100])
-                # upper_orange = np.array([30, 255, 255])
-                # lower_gray = np.array([100, 100, 100])
-                # upper_gray = np.array([150, 150, 150])
-                #
-                # mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
-                # mask_gray = cv2.inRange(hsv, lower_gray, upper_gray)
-                #
-                # contours, _ = cv2.findContours(mask_orange | mask_gray, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                # Диапазоны цветов в HSV
+                lower_orange = np.array([10, 100, 100])
+                upper_orange = np.array([30, 255, 255])
+                lower_gray = np.array([0, 0, 50])
+                upper_gray = np.array([180, 50, 200])
 
-                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                thresh = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)[1]
-                contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+                # Создание масок
+                mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
+                mask_gray = cv2.inRange(hsv, lower_gray, upper_gray)
+
+                # Комбинируем маски для поиска контуров, исключая синий
+                combined_mask = mask_orange | mask_gray
+                contours, _ = cv2.findContours(combined_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
                 for contour in contours:
                     area = cv2.contourArea(contour)
@@ -136,7 +137,6 @@ class Clicker:
                             start_time = time.time()
                             # logging.info("Game started. Clicking initiated.")  # Log the start
                             print("Game started. Clicking initiated.")
-
                         center_x = x + w // 2
                         center_y = y + h // 2
                         absolute_x = x1 + center_x + random.randint(-5, 5)
@@ -144,7 +144,7 @@ class Clicker:
                         win32api.SetCursorPos((absolute_x, absolute_y))
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, absolute_x, absolute_y, 0, 0)
                         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, absolute_x, absolute_y, 0, 0)
-                        delay = random.uniform(0.01, 0.06)
+                        delay = random.uniform(0.01, 0.03)
                         # time.sleep(0.01)
                         time.sleep(delay)
                         click_counter += 1
