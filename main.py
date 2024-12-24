@@ -8,10 +8,9 @@ import time
 import win32api
 import win32con
 import logging
-import count_rewards
 
 
-paused = False
+paused = True
 total_points = 0
 logging.basicConfig(filename='clicker_log.txt', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -61,34 +60,8 @@ class Clicker:
                 print(f"Window'{self.window_title}' Found")
                 time.sleep(1)
 
-    def retrieve_reward_points(self):
-        global total_points
-        x1, y1, x2, y2 = self.get_coords()
-        coords = (x1 + 170, y1 + 345, x2 - 100, y2 - 275)
-        try:
-            screenshot = ImageGrab.grab(bbox=coords)
-            screenshot_np = np.array(screenshot)
-
-            count_points_for_game = count_rewards.image_to_text(screenshot_np).split()
-
-            if count_points_for_game:
-                clear = ''.join(c for c in count_points_for_game[0] if c.isdigit())
-                if clear:
-                    print(f'points per game: {clear}')
-                    total_points += int(clear)
-                    logging.info("points per game: {clear}")
-                else:
-                    print("points per game : error")
-            else:
-                print("points per game : error")
-
-        except Exception as e:
-            print(f"points per game : error")
-            print(f"Error: {e}")
-
     def replay_game(self):
         print("Try to start new game")
-        self.retrieve_reward_points()
         time.sleep(5)
         x1, y1, x2, y2 = self.get_coords()
         coords = (x1 + 20, y1 + 530, x2 - 30, y2 - 75)
@@ -123,44 +96,40 @@ class Clicker:
         global paused
         x1, y1, x2, y2 = self.coordinates
         x1 += 20
-        y1 += 150
+        y1 += 170
         x2 -= 20
         y2 -= 400
 
         start_time = None
-        time_limit = 30
+        time_limit = 45
+
+        # Выбор линии на уровне 3/4 высоты области
+        line_y = y1 + int((y2 - y1) * 0.75)
+        step = 30  # Шаг между кликами на линии
 
         while True and (start_time is None or time.time() - start_time <= time_limit):
             if not paused:
-                screenshot = ImageGrab.grab(bbox=(x1, y1, x2, y2))
-                image = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2BGR)
-                hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+                if start_time is None:
+                    start_time = time.time()
+                    logging.info("Game started. Clicking initiated.")  # Log the start
+                    print("Game started. Clicking initiated.")
 
-                lower_green = np.array([30, 120, 100])
-                upper_green = np.array([65, 255, 255])
-                mask_green = cv2.inRange(hsv, lower_green, upper_green)
-                contours_green, _ = cv2.findContours(mask_green, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                # Прокликивание по линии быстро и плавно
+                for x in range(x1, x2, step):
+                    absolute_x = x + random.randint(-2, 2)  # Меньше отклонение для плавности
+                    absolute_y = line_y + random.randint(-2, 2)
 
-                for contour in contours_green:
-                    area = cv2.contourArea(contour)
-                    x, y, w, h = cv2.boundingRect(contour)
-                    aspect_ratio = float(w) / h
-                    if area > 15 and 0.8 < aspect_ratio < 1.2:
-                        if start_time is None:
-                            start_time = time.time()
-                            logging.info("Game started. Clicking initiated.")  # Log the start
-                            print("Game started. Clicking initiated.")
+                    # Эмуляция клика
+                    win32api.SetCursorPos((absolute_x, absolute_y))
+                    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0)
+                    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, 0, 0, 0, 0)
 
-                        center_x = x + w // 2
-                        center_y = y + h // 2
-                        absolute_x = x1 + center_x + random.randint(-5, 5)
-                        absolute_y = y1 + center_y + random.randint(-5, 5)
-                        win32api.SetCursorPos((absolute_x, absolute_y))
-                        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, absolute_x, absolute_y, 0, 0)
-                        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, absolute_x, absolute_y, 0, 0)
-                        delay = random.uniform(0.01, 0.1)
-                        time.sleep(delay)
-                        break
+                    # Очень маленькая задержка для плавности
+                    time.sleep(0.02)
+
+                # Минимальная задержка между циклами
+                delay = random.uniform(0.01, 0.08)
+                time.sleep(delay)
 
             if keyboard.is_pressed('q'):
                 paused = not paused
@@ -184,8 +153,9 @@ def game():
     ██╔══██╗██║░░░░░██║░░░██║██║╚██╔╝██║  ██║░░██╗██║░░░░░██║██║░░██╗██╔═██╗░██╔══╝░░██╔══██╗
     ██████╦╝███████╗╚██████╔╝██║░╚═╝░██║  ╚█████╔╝███████╗██║╚█████╔╝██║░╚██╗███████╗██║░░██║
     ╚═════╝░╚══════╝░╚═════╝░╚═╝░░░░░╚═╝  ░╚════╝░╚══════╝╚═╝░╚════╝░╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝""")
+    print("ver_without_count_rewards")
     print("INSTRUCTION")
-    print("OPEN BLUM, START SCRIPT, ENTER THE NUMBER OF GAMES, PRESS PLAY ON MAIN SCREEN AND WATCH")
+    print("Open Blum, start script, enter the number of games, press play on main screen and watch")
     print("Press 'q' to pause(pause broke script)")
     if clicker.is_window_open():
         count = clicker.count_replay_game()
@@ -193,15 +163,10 @@ def game():
             clicker.find_objects_and_click()
             clicker.replay_game()
             count -= 1
-            print(f"Games Left {count + 1}")
+            print(f"Games Left {count}")
             print("------------------------------------------------------")
-
         clicker.find_objects_and_click()
-        clicker.retrieve_reward_points()
-        logging.info(f'total_point for session {total_points}')
-    print(f"total points: {total_points}")
     print("End")
-    input("Press enter to quit.")
 
 
 if __name__ == '__main__':
